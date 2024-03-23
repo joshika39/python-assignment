@@ -16,7 +16,7 @@ def setup_event_router(api: CRUDApi, router: APIRouter):
     analyser = EventAnalyzer()
     @router.get("/events/joiners/multiple-meetings")
     async def get_multiple_meetings():
-        events = api.datasource.get_all("events")  #type: list[Event]
+        events = api.get_datasource().get_all("events")  #type: list[Event]
         return analyser.get_joiners_multiple_meetings(events)
 
 def main():
@@ -27,19 +27,14 @@ def main():
     data_source.add_table(events_table)
     data_source.add_table(organizers_table)
     api = bootstrap(data_source)
-    api.add_router('organizers', Organizer)
-    events_router = api.add_router('events', Event)
-    e_r = events_router.get_base()
-
-    @e_r.post("/join/{event_id}/{organizer_id}")
-    async def join_event(event_id: str, organizer_id: str):
-        print(f"Joining event {event_id} with organizer {organizer_id}")
-
+    api.include_router('organizers', Organizer)
+    events_router = api.register_router('events', Event)
     app = api.get_app()
     @app.get("/")
     async def root():
         return {"message": "Hello World"}
     setup_event_router(api, events_router.get_base())
+    api.publish()
     uvicorn.run(app, host="0.0.0.0", port=1234)
 
 if __name__ == "__main__":
