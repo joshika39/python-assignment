@@ -40,17 +40,11 @@ jobs:
             ${{ variables.HUB_NS }}/${{ variables.HUB_REPO }}
             ghcr.io/${{ env.REPO }}
 
-      - name: Build and push container hashed image to registry
-        uses: docker/build-push-action@v4
-        with:
-          platforms: linux/amd64,linux/arm64
-          push: true
-          tags: ghcr.io/${{ env.REPO }}:${{ github.sha }}
-          file: ./Dockerfile
       - name: Build and push container latest image to registry
         uses: docker/build-push-action@v4
         with:
+          context: .
           platforms: linux/amd64,linux/arm64
           push: true
           tags: ghcr.io/${{ env.REPO }}:latest
-          file: ./Dockerfile
+          labels: ${{ steps.meta.outputs.labels }}
