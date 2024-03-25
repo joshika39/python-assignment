@@ -7,6 +7,9 @@ on:
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
+    permissions:
+      packages: write
+      contents: read
     steps:
       - uses: actions/checkout@v4
 
@@ -20,8 +23,22 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.DOCKER_PUSH }}
 
+      - name: Log in to Docker Hub
+        uses: docker/login-action@f4ef78c080cd8ba55a85445d5b36e214a81df20a
+        with:
+          username: ${{ github.actor }}
+          password: ${{ secrets.HUB_PASSWORD }}
+
       - name: Lowercase the repo name
         run: echo "REPO=${GITHUB_REPOSITORY,,}" >>${GITHUB_ENV}
+
+      - name: Extract metadata (tags, labels) for Docker
+        id: meta
+        uses: docker/metadata-action@9ec57ed1fcdbf14dcef7dfbe97b2010124a938b7
+        with:
+          images: |
+            ${{ variables.HUB_NS }}/${{ variables.HUB_REPO }}
+            ghcr.io/${{ env.REPO }}
 
       - name: Build and push container hashed image to registry
         uses: docker/build-push-action@v4
