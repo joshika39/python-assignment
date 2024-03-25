@@ -37,7 +37,7 @@ jobs:
         uses: docker/metadata-action@9ec57ed1fcdbf14dcef7dfbe97b2010124a938b7
         with:
           images: |
-            ${{ variables.HUB_NS }}/${{ variables.HUB_REPO }}
+            ${{ vars.HUB_NS }}/${{ vars.HUB_REPO }}
             ghcr.io/${{ env.REPO }}
 
       - name: Build and push container latest image to registry
