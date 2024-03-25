@@ -1,4 +1,4 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, FastAPI
 import uvicorn
 from pyrepositories import DataSource, JsonTable
 from crud import CRUDApi
@@ -12,14 +12,9 @@ sys.path.append(os.path.join(path_root))
 from app.lib import init_project, bootstrap, EventAnalyzer
 from app.models import Event, Organizer
 
-def setup_event_router(api: CRUDApi, router: APIRouter):
-    analyser = EventAnalyzer()
-    @router.get("/events/joiners/multiple-meetings")
-    async def get_multiple_meetings():
-        events = api.get_datasource().get_all("events")  #type: list[Event]
-        return analyser.get_joiners_multiple_meetings(events)
+analyser = EventAnalyzer()
 
-def main():
+def setup() -> FastAPI:
     data_dir = init_project()
     data_source = DataSource()
     events_table = JsonTable("events", data_dir)
@@ -33,10 +28,23 @@ def main():
     @app.get("/")
     async def root():
         return {"message": "Hello World"}
-    setup_event_router(api, events_router.get_base())
+
+    @events_router.get_base().get("/events/joiners/multiple-meetings")
+    async def get_multiple_meetings():
+        events = api.get_datasource().get_all("events")  #type: list[Event]
+        return analyser.get_joiners_multiple_meetings(events)
+
     api.publish()
-    uvicorn.run(app, host="0.0.0.0", port=1234)
+
+    return app
 
 if __name__ == "__main__":
-    main()
+    try:
+        app = setup()
+        uvicorn.run(app, host="0.0.0.0", port=1234)
+    except KeyboardInterrupt:
+        print("Shutting down...")
+        exit()
+
+app = setup()
 
