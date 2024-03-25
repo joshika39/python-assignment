@@ -1,5 +1,7 @@
 # Python assignment for University
 
+The assignment is can be accessed [here](https://py-assignment.kou-gen.net/).
+
 ## Usage
 
 ### Linux
